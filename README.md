@@ -39,7 +39,7 @@ A "Post" have the attributes [id:String, title:String, content:String]
 We would like to see:
  - A client (command line or webapp) that calls a the servive with the correct arguments (and handles all possible/plausible errors) using REST API
     - The client should be able to add, list, view and delete posts.
- - A blog server that can serve a REST-service according to the RAML-specification below. 
+ - A blog server that can serve a REST-service according to the Swagger-specification below. 
     - That is:
         - List all posts
         - Create a post
