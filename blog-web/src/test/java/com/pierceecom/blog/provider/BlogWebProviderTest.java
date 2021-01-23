@@ -45,5 +45,12 @@ public class BlogWebProviderTest {
 
         verify(service, times(1)).addPost(Mockito.eq(post));
     }
-    
+
+    @Test
+    public void updatePostTest(){
+        Post updatedPost = new Post("1", "Välkommen (igen)!", "Verkligen välkommen till vår nya blogg.");
+        resource.updatePost(updatedPost);
+
+        verify(service, times(1)).updatePost(Mockito.eq(updatedPost));
+    }
 }

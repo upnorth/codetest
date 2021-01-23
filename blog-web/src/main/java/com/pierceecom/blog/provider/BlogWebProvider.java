@@ -4,10 +4,7 @@ import com.pierceecom.blog.model.Post;
 import com.pierceecom.blog.model.PostsResponse;
 import com.pierceecom.blog.service.BlogWebServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -27,5 +24,10 @@ public class BlogWebProvider {
     @PostMapping("/posts")
     public void addPost(@RequestBody Post post) {
         service.addPost(post);
+    }
+
+    @PutMapping("/posts")
+    public void updatePost(@RequestBody Post updatedPost) {
+        service.updatePost(updatedPost);
     }
 }

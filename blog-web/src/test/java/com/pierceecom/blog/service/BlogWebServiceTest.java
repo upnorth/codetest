@@ -34,12 +34,12 @@ class BlogWebServiceTest {
         List<Post> allPosts = service.getAllPosts();
 
         assertEquals(allPosts.size(), 2);
-        assertEquals(allPosts.get(0).getId(), postOneId);
-        assertEquals(allPosts.get(0).getTitle(), postOneTitle);
-        assertEquals(allPosts.get(0).getContent(), postOneContent);
-        assertEquals(allPosts.get(1).getId(), postTwoId);
-        assertEquals(allPosts.get(1).getTitle(), postTwoTitle);
-        assertEquals(allPosts.get(1).getContent(), postTwoContent);
+        assertEquals(postOneId, allPosts.get(0).getId());
+        assertEquals(postOneTitle, allPosts.get(0).getTitle());
+        assertEquals(postOneContent, allPosts.get(0).getContent());
+        assertEquals(postTwoId, allPosts.get(1).getId());
+        assertEquals(postTwoTitle, allPosts.get(1).getTitle());
+        assertEquals(postTwoContent, allPosts.get(1).getContent());
     }
 
     @Test
@@ -52,8 +52,34 @@ class BlogWebServiceTest {
 
         List<Post> allPosts = service.getAllPosts();
         assertEquals(allPosts.size(), 1);
-        assertEquals(allPosts.get(0).getId(), postOneId);
-        assertEquals(allPosts.get(0).getTitle(), postOneTitle);
-        assertEquals(allPosts.get(0).getContent(), postOneContent);
+        assertEquals(postOneId, allPosts.get(0).getId());
+        assertEquals(postOneTitle, allPosts.get(0).getTitle());
+        assertEquals(postOneContent, allPosts.get(0).getContent());
+    }
+
+    @Test
+    void updatePost(){
+        String postOneId = "1";
+        String postOneTitle = "Post Title";
+        String postOneContent = "Content";
+        service.addPost(new Post(postOneId, postOneTitle, postOneContent));
+
+        List<Post> allPosts = service.getAllPosts();
+        assertEquals(allPosts.size(), 1);
+        assertEquals(postOneId, allPosts.get(0).getId());
+        assertEquals(postOneTitle, allPosts.get(0).getTitle());
+        assertEquals(postOneContent, allPosts.get(0).getContent());
+
+        String updatePostId = "1";
+        String updatePostTitle = "Updated Post Title";
+        String updatePostContent = "Updated Post Content";
+
+        service.updatePost(new Post(updatePostId, updatePostTitle, updatePostContent));
+
+        List<Post> allUpdatedPosts = service.getAllPosts();
+        assertEquals(allPosts.size(), 1);
+        assertEquals(updatePostId, allUpdatedPosts.get(0).getId());
+        assertEquals(updatePostTitle, allUpdatedPosts.get(0).getTitle());
+        assertEquals(updatePostContent, allUpdatedPosts.get(0).getContent());
     }
 }
