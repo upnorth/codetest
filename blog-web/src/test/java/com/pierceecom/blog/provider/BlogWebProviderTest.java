@@ -53,4 +53,12 @@ public class BlogWebProviderTest {
 
         verify(service, times(1)).updatePost(Mockito.eq(updatedPost));
     }
+
+    @Test
+    public void deletePostTest() {
+        String id = "1";
+        resource.deletePost(id);
+
+        verify(service, times(1)).deletePost(Mockito.eq(id));
+    }
 }

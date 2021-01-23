@@ -33,7 +33,7 @@ class BlogWebServiceTest {
 
         List<Post> allPosts = service.getAllPosts();
 
-        assertEquals(allPosts.size(), 2);
+        assertEquals(2, allPosts.size());
         assertEquals(postOneId, allPosts.get(0).getId());
         assertEquals(postOneTitle, allPosts.get(0).getTitle());
         assertEquals(postOneContent, allPosts.get(0).getContent());
@@ -51,7 +51,7 @@ class BlogWebServiceTest {
         service.addPost(new Post(postOneId, postOneTitle, postOneContent));
 
         List<Post> allPosts = service.getAllPosts();
-        assertEquals(allPosts.size(), 1);
+        assertEquals(1, allPosts.size());
         assertEquals(postOneId, allPosts.get(0).getId());
         assertEquals(postOneTitle, allPosts.get(0).getTitle());
         assertEquals(postOneContent, allPosts.get(0).getContent());
@@ -65,7 +65,7 @@ class BlogWebServiceTest {
         service.addPost(new Post(postOneId, postOneTitle, postOneContent));
 
         List<Post> allPosts = service.getAllPosts();
-        assertEquals(allPosts.size(), 1);
+        assertEquals(1, allPosts.size());
         assertEquals(postOneId, allPosts.get(0).getId());
         assertEquals(postOneTitle, allPosts.get(0).getTitle());
         assertEquals(postOneContent, allPosts.get(0).getContent());
@@ -77,9 +77,25 @@ class BlogWebServiceTest {
         service.updatePost(new Post(updatePostId, updatePostTitle, updatePostContent));
 
         List<Post> allUpdatedPosts = service.getAllPosts();
-        assertEquals(allPosts.size(), 1);
+        assertEquals(1, allPosts.size());
         assertEquals(updatePostId, allUpdatedPosts.get(0).getId());
         assertEquals(updatePostTitle, allUpdatedPosts.get(0).getTitle());
         assertEquals(updatePostContent, allUpdatedPosts.get(0).getContent());
+    }
+
+    @Test
+    void deletePost(){
+        String postOneId = "1";
+        String postOneTitle = "Post Title";
+        String postOneContent = "Content";
+        service.addPost(new Post(postOneId, postOneTitle, postOneContent));
+
+        List<Post> allPosts = service.getAllPosts();
+        assertEquals(allPosts.size(), 1);
+
+        service.deletePost(postOneId);
+
+        List<Post> noPosts = service.getAllPosts();
+        assertEquals(noPosts.size(), 0);
     }
 }
