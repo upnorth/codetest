@@ -26,6 +26,29 @@ public class BlogWebProviderTest {
     private BlogWebProvider resource;
 
     @Test
+    public void addPostTest() {
+        Post post = new Post("1", "Välkommen!", "Välkommen till vår nya blogg.");
+        resource.addPost(post);
+
+        verify(service, times(1)).addPost(Mockito.eq(post));
+    }
+
+    @Test
+    public void getPostTest(){
+        String postId = "1";
+        String postTitle = "Post Title";
+        String postContent = "Content";
+        when(service.getPost(postId)).thenReturn(new Post(postId, postTitle, postContent));
+
+        Post post = resource.getPost(postId);
+
+        verify(service, times(1)).getPost(postId);
+        assertEquals(postId, post.getId());
+        assertEquals(postTitle, post.getTitle());
+        assertEquals(postContent, post.getContent());
+    }
+
+    @Test
     public void getAllPostsTest() {
         List<Post> posts = new ArrayList<>();
         posts.add(new Post("1", "Välkommen!", "Välkommen till vår nya blogg."));
@@ -35,15 +58,8 @@ public class BlogWebProviderTest {
 
         PostsResponse postsResponse = resource.getAllPosts();
 
-        assertEquals(postsResponse.getPosts(), posts);
-    }
-
-    @Test
-    public void addPostTest() {
-        Post post = new Post("1", "Välkommen!", "Välkommen till vår nya blogg.");
-        resource.addPost(post);
-
-        verify(service, times(1)).addPost(Mockito.eq(post));
+        verify(service, times(1)).getAllPosts();
+        assertEquals(posts, postsResponse.getPosts());
     }
 
     @Test
