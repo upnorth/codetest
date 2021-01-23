@@ -8,4 +8,6 @@ public interface BlogWebServiceInterface {
     List<Post> getAllPosts();
 
     void addPost(Post post);
+
+    void updatePost(Post post);
 }

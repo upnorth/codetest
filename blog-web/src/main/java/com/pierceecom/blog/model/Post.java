@@ -10,8 +10,10 @@ public class Post {
     @JsonProperty("title")
     private String title;
 
-    @JsonProperty("id")
+    @JsonProperty("content")
     private String content;
+
+    public Post(){}
 
     public Post(String id, String title, String content) {
         this.id = id;
