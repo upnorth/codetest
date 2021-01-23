@@ -10,4 +10,6 @@ public interface BlogWebServiceInterface {
     void addPost(Post post);
 
     void updatePost(Post post);
+
+    void deletePost(String postId);
 }

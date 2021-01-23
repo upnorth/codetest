@@ -30,4 +30,9 @@ public class BlogWebProvider {
     public void updatePost(@RequestBody Post updatedPost) {
         service.updatePost(updatedPost);
     }
+
+    @DeleteMapping("/posts/{id}")
+    public void deletePost(@PathVariable String id) {
+        service.deletePost(id);
+    }
 }

@@ -25,12 +25,21 @@ public class BlogWebService implements BlogWebServiceInterface {
 
     @Override
     public void updatePost(Post updatedPost) {
-        Post existingPost = posts.stream()
-                .filter(p -> p.getId().equals(updatedPost.getId()))
-                .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
-
+        Post existingPost = findPost(updatedPost.getId());
         posts.set(posts.indexOf(existingPost),
                 new Post(updatedPost.getId(), updatedPost.getTitle(), updatedPost.getContent()));
+    }
+
+    @Override
+    public void deletePost(String postId) {
+        Post existingPost = findPost(postId);
+        posts.remove(existingPost);
+    }
+
+    private Post findPost(String id) {
+        return posts.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
     }
 }
