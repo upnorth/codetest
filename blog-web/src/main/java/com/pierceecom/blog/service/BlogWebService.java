@@ -36,6 +36,11 @@ public class BlogWebService implements BlogWebServiceInterface {
         posts.remove(existingPost);
     }
 
+    @Override
+    public Post getPost(String postId) {
+        return findPost(postId);
+    }
+
     private Post findPost(String id) {
         return posts.stream()
                 .filter(p -> p.getId().equals(id))

@@ -21,6 +21,35 @@ class BlogWebServiceTest {
     }
 
     @Test
+    void addPostTest() {
+        String postOneId = "1";
+        String postOneTitle = "Post Title";
+        String postOneContent = "Content";
+
+        service.addPost(new Post(postOneId, postOneTitle, postOneContent));
+
+        List<Post> allPosts = service.getAllPosts();
+        assertEquals(1, allPosts.size());
+        assertEquals(postOneId, allPosts.get(0).getId());
+        assertEquals(postOneTitle, allPosts.get(0).getTitle());
+        assertEquals(postOneContent, allPosts.get(0).getContent());
+    }
+
+    @Test
+    void getPostTest(){
+        String postOneId = "1";
+        String postOneTitle = "Post Title";
+        String postOneContent = "Content";
+        service.addPost(new Post(postOneId, postOneTitle, postOneContent));
+
+        Post post = service.getPost(postOneId);
+
+        assertEquals(postOneId, post.getId());
+        assertEquals(postOneTitle, post.getTitle());
+        assertEquals(postOneContent, post.getContent());
+    }
+
+    @Test
     void getAllPostsTest() {
         String postOneId = "1";
         String postOneTitle = "Post Title";
@@ -40,21 +69,6 @@ class BlogWebServiceTest {
         assertEquals(postTwoId, allPosts.get(1).getId());
         assertEquals(postTwoTitle, allPosts.get(1).getTitle());
         assertEquals(postTwoContent, allPosts.get(1).getContent());
-    }
-
-    @Test
-    void addPostTest() {
-        String postOneId = "1";
-        String postOneTitle = "Post Title";
-        String postOneContent = "Content";
-
-        service.addPost(new Post(postOneId, postOneTitle, postOneContent));
-
-        List<Post> allPosts = service.getAllPosts();
-        assertEquals(1, allPosts.size());
-        assertEquals(postOneId, allPosts.get(0).getId());
-        assertEquals(postOneTitle, allPosts.get(0).getTitle());
-        assertEquals(postOneContent, allPosts.get(0).getContent());
     }
 
     @Test

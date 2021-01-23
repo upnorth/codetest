@@ -15,15 +15,20 @@ public class BlogWebProvider {
     @Autowired
     private BlogWebServiceInterface service;
 
+    @PostMapping("/posts")
+    public void addPost(@RequestBody Post post) {
+        service.addPost(post);
+    }
+
+    @GetMapping("/posts/{id}")
+    public Post getPost(@PathVariable String id) {
+        return service.getPost(id);
+    }
+
     @GetMapping("/posts")
     @Produces(MediaType.APPLICATION_JSON)
     public PostsResponse getAllPosts() {
         return new PostsResponse(service.getAllPosts());
-    }
-
-    @PostMapping("/posts")
-    public void addPost(@RequestBody Post post) {
-        service.addPost(post);
     }
 
     @PutMapping("/posts")

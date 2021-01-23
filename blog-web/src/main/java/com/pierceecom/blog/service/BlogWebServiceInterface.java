@@ -12,4 +12,6 @@ public interface BlogWebServiceInterface {
     void updatePost(Post post);
 
     void deletePost(String postId);
+
+    Post getPost(String postId);
 }
