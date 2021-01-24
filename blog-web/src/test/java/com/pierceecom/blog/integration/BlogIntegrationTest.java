@@ -22,14 +22,14 @@ import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class BlogTestIntegr {
+public class BlogIntegrationTest {
 
     private static final String VALID_POST_1 = "{\"id\":\"1\",\"title\":\"First title\",\"content\":\"First content\"}";
     private static final String VALID_UPDATE_POST_1 = "{\"id\":\"1\",\"title\":\"First updated title\",\"content\":\"First updated content\"}";
     private static final String VALID_POST_2 = "{\"id\":\"2\",\"title\":\"Second title\",\"content\":\"Second content\"}";
     private static final String INVALID_POST_MISSING_TITLE = "{\"id\":\"1\",\"content\":\"First content\"}";
     private static final String INVALID_POST_MISSING_CONTENT = "{\"id\":\"1\",\"title\":\"Title\"}";
-    ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @LocalServerPort
     private int port;

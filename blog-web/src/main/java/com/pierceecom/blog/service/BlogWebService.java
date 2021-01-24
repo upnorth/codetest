@@ -10,7 +10,8 @@ import java.util.List;
 
 @Service
 public class BlogWebService implements BlogWebServiceInterface {
-    List<Post> posts = new ArrayList<>(); //TODO: Persist with local or cloud database
+    // TODO: Persist with local or cloud database
+    List<Post> posts = new ArrayList<>();
 
     @Override
     public List<Post> getAllPosts() {
@@ -19,6 +20,8 @@ public class BlogWebService implements BlogWebServiceInterface {
 
     @Override
     public void addPost(Post post) {
+        // TODO: Should have generated GUIDs or auto incremented ids from database.
+        // As the API spec doens't require id, current implementation depends on proper input
         validate(post);
         posts.add(post);
     }
@@ -43,15 +46,23 @@ public class BlogWebService implements BlogWebServiceInterface {
 
     private void validate(Post post) {
         // TODO: Possibly use @NotBlank annotation in Post class on fields instead, cleaner
-        if(post.getTitle() == null || post.getTitle().trim().equals("")
-                || post.getContent() == null || post.getContent().trim().equals("")){
+        if(hasNotValidTitle(post) || hasNotValidContent(post)){
             // TODO: Possibly change to 400 Bad Request in API spec?
             // TODO: Log error
             throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED);
         }
     }
 
+    private boolean hasNotValidContent(Post post) {
+        return post.getContent() == null || post.getContent().trim().equals("");
+    }
+
+    private boolean hasNotValidTitle(Post post) {
+        return post.getTitle() == null || post.getTitle().trim().equals("");
+    }
+
     private Post findPost(String id) {
+        // TODO: Possibly add validation of id string
         return posts.stream()
                 .filter(p -> p.getId().equals(id))
                 .findFirst()
