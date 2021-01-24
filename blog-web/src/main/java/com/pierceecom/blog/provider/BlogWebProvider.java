@@ -1,13 +1,15 @@
 package com.pierceecom.blog.provider;
 
 import com.pierceecom.blog.model.Post;
-import com.pierceecom.blog.model.PostsResponse;
 import com.pierceecom.blog.service.BlogWebServiceInterface;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @RestController
 public class BlogWebProvider {
@@ -16,8 +18,10 @@ public class BlogWebProvider {
     private BlogWebServiceInterface service;
 
     @PostMapping("/posts")
-    public void addPost(@RequestBody Post post) {
+    public ResponseEntity<Void> addPost(@RequestBody Post post) {
         service.addPost(post);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @GetMapping("/posts/{id}")
@@ -27,13 +31,15 @@ public class BlogWebProvider {
 
     @GetMapping("/posts")
     @Produces(MediaType.APPLICATION_JSON)
-    public PostsResponse getAllPosts() {
-        return new PostsResponse(service.getAllPosts());
+    public List<Post> getAllPosts() {
+        return service.getAllPosts();
     }
 
     @PutMapping("/posts")
-    public void updatePost(@RequestBody Post updatedPost) {
+    public ResponseEntity<Void> updatePost(@RequestBody Post updatedPost) {
         service.updatePost(updatedPost);
+
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @DeleteMapping("/posts/{id}")

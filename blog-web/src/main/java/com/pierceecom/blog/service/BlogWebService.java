@@ -2,13 +2,13 @@ package com.pierceecom.blog.service;
 
 import com.pierceecom.blog.model.Post;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Service
 public class BlogWebService implements BlogWebServiceInterface {
     List<Post> posts = new ArrayList<>(); //TODO: Persist with local or cloud database
 
@@ -19,15 +19,15 @@ public class BlogWebService implements BlogWebServiceInterface {
 
     @Override
     public void addPost(Post post) {
-        //TODO: validate post
+        validate(post);
         posts.add(post);
     }
 
     @Override
     public void updatePost(Post updatedPost) {
+        validate(updatedPost);
         Post existingPost = findPost(updatedPost.getId());
-        posts.set(posts.indexOf(existingPost),
-                new Post(updatedPost.getId(), updatedPost.getTitle(), updatedPost.getContent()));
+        posts.set(posts.indexOf(existingPost), updatedPost);
     }
 
     @Override
@@ -39,6 +39,16 @@ public class BlogWebService implements BlogWebServiceInterface {
     @Override
     public Post getPost(String postId) {
         return findPost(postId);
+    }
+
+    private void validate(Post post) {
+        // TODO: Possibly use @NotBlank annotation in Post class on fields instead, cleaner
+        if(post.getTitle() == null || post.getTitle().trim().equals("")
+                || post.getContent() == null || post.getContent().trim().equals("")){
+            // TODO: Possibly change to 400 Bad Request in API spec?
+            // TODO: Log error
+            throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED);
+        }
     }
 
     private Post findPost(String id) {

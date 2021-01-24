@@ -1,7 +1,6 @@
 package com.pierceecom.blog.provider;
 
 import com.pierceecom.blog.model.Post;
-import com.pierceecom.blog.model.PostsResponse;
 import com.pierceecom.blog.service.BlogWebServiceInterface;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,10 +55,10 @@ public class BlogWebProviderTest {
         posts.add(new Post("3", "Post nr 3!", "Jamtland, Jamtland, Jamt å ständut!"));
         when(service.getAllPosts()).thenReturn(posts);
 
-        PostsResponse postsResponse = resource.getAllPosts();
+        List<Post> postsResponse = resource.getAllPosts();
 
         verify(service, times(1)).getAllPosts();
-        assertEquals(posts, postsResponse.getPosts());
+        assertEquals(posts, postsResponse);
     }
 
     @Test
