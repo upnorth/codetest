@@ -18,6 +18,8 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class BlogWebProviderTest {
 
+    // Only happy path here due to simple delegation logic, and bad path being tested in service and integration tests
+
     @Mock
     private BlogWebServiceInterface service;
 

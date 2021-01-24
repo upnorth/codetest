@@ -21,6 +21,7 @@ public class BlogWebProvider {
     public ResponseEntity<Void> addPost(@RequestBody Post post) {
         service.addPost(post);
 
+        // Response entity needed for integration tests
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -39,6 +40,7 @@ public class BlogWebProvider {
     public ResponseEntity<Void> updatePost(@RequestBody Post updatedPost) {
         service.updatePost(updatedPost);
 
+        // Response entity needed for integration tests
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

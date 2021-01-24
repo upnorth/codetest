@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Post {
 
+    // TODO: Separate models into API, Domain and Data with mapping between controllers, services and database
+    // Using API model with external validation in services to simplify this task, cleaner in constructor and setters
+
     @JsonProperty("id")
     private String id;
 
