@@ -18,11 +18,8 @@ public class BlogWebProvider {
     private BlogWebServiceInterface service;
 
     @PostMapping("/posts")
-    public ResponseEntity<Void> addPost(@RequestBody Post post) {
-        service.addPost(post);
-
-        // Response entity needed for integration tests
-        return new ResponseEntity<>(HttpStatus.CREATED);
+    public ResponseEntity<Post> addPost(@RequestBody Post post) {
+        return new ResponseEntity<>(service.addPost(post), HttpStatus.CREATED);
     }
 
     @GetMapping("/posts/{id}")
@@ -40,7 +37,6 @@ public class BlogWebProvider {
     public ResponseEntity<Void> updatePost(@RequestBody Post updatedPost) {
         service.updatePost(updatedPost);
 
-        // Response entity needed for integration tests
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

@@ -16,9 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
+import java.util.Objects;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,8 +27,6 @@ public class BlogIntegrationTest {
     private static final String VALID_POST_1 = "{\"id\":\"1\",\"title\":\"First title\",\"content\":\"First content\"}";
     private static final String VALID_UPDATE_POST_1 = "{\"id\":\"1\",\"title\":\"First updated title\",\"content\":\"First updated content\"}";
     private static final String VALID_POST_2 = "{\"id\":\"2\",\"title\":\"Second title\",\"content\":\"Second content\"}";
-    private static final String INVALID_POST_MISSING_TITLE = "{\"id\":\"1\",\"content\":\"First content\"}";
-    private static final String INVALID_POST_MISSING_CONTENT = "{\"id\":\"1\",\"title\":\"Title\"}";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @LocalServerPort
@@ -37,81 +35,80 @@ public class BlogIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private String getBlogURI() {
-        // TODO: Refactor as class member, had problems with port initialization but remember using cleaner solutions
-        return "http://localhost:" + port + "/blog-web/posts/";
-    }
-
-    void clearPosts() {
-        // Resets blog server state to make each test independent from the rest
-        // Doesn't work with @BeforeEach annotation, possibly due to port and restTemplate not working as static
-        restTemplate.delete(getBlogURI() + "1");
-        restTemplate.delete(getBlogURI() + "2");
-    }
-
     @Test
     public void shouldAddPostWhenValidPostIsPosted() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        ResponseEntity<Void> addPostResponse = restTemplate.postForEntity(getBlogURI(), post, Void.class);
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
+
+        ResponseEntity<Post> addPostResponse = addPostRequest(post);
 
         assertEquals(201, addPostResponse.getStatusCode().value());
-        assertEquals("[" + VALID_POST_1 + "]", getPostsResponse.getBody());
+        ResponseEntity<String> getPostsResponse = getPostsRequest();
+        List<Post> addedPosts = toList(getPostsResponse.getBody());
+        assertEquals(1, addedPosts.size());
+        assertEquals(post.getTitle(), addedPosts.get(0).getTitle());
+        assertEquals(post.getContent(), addedPosts.get(0).getContent());
     }
 
     @Test
     public void shouldNotAddPostWhenPostWithoutTitleIsPosted() throws JsonProcessingException {
         clearPosts();
-        Post postNoTitle = objectMapper.readValue(INVALID_POST_MISSING_TITLE, Post.class);
+        Post post = objectMapper.readValue(VALID_POST_1, Post.class);
+        post.setTitle("");
 
-        ResponseEntity<Void> addPostNoTitleResponse = restTemplate.postForEntity(getBlogURI(), postNoTitle, Void.class);
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
+        ResponseEntity<Void> addPostNoTitleResponse = addInvalidPostRequest(post);
 
         assertEquals(405, addPostNoTitleResponse.getStatusCode().value());
         // TODO: Add tests of custom reason phrase from API spec. Seems to require GlobalExceptionHandler, will skip for now
+        ResponseEntity<String> getPostsResponse = getPostsRequest();
         assertEquals("[]", getPostsResponse.getBody());
     }
 
     @Test
     public void shouldNotAddPostWhenPostWithoutContentIsPosted() throws JsonProcessingException {
         clearPosts();
-        Post postNoContent = objectMapper.readValue(INVALID_POST_MISSING_CONTENT, Post.class);
-        ResponseEntity<Void> addPostNoContentResponse = restTemplate.postForEntity(getBlogURI(), postNoContent, Void.class);
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
+        Post post = objectMapper.readValue(VALID_POST_1, Post.class);
+        post.setContent("");
+
+        ResponseEntity<Void> addPostNoContentResponse = addInvalidPostRequest(post);
 
         assertEquals(405, addPostNoContentResponse.getStatusCode().value());
+        ResponseEntity<String> getPostsResponse = getPostsRequest();
         assertEquals("[]", getPostsResponse.getBody());
     }
 
     @Test
-    public void shouldReturnPostWhenExistingIsRequestedById() throws JsonProcessingException {
+    public void shouldReturnCorrectPostWhenExistingIsRequestedById() throws JsonProcessingException {
         clearPosts();
-        Post post1 = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post1, Void.class);
-        String post1id = post1.getId();
+        Post post = objectMapper.readValue(VALID_POST_1, Post.class);
+        Post postWithId = addPostRequest(post).getBody();
 
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(getBlogURI() + post1id, String.class);
+        ResponseEntity<String> responseEntity = getPostById(Objects.requireNonNull(postWithId).getId());
+
         assertEquals(200, responseEntity.getStatusCode().value());
-        assertEquals(VALID_POST_1, responseEntity.getBody());
+        Post responsePost = objectMapper.readValue(Objects.requireNonNull(responseEntity.getBody()), Post.class);
+        assertEquals(postWithId.getId(), responsePost.getId());
+        assertEquals(postWithId.getTitle(), responsePost.getTitle());
+        assertEquals(postWithId.getContent(), responsePost.getContent());
     }
 
     @Test
     public void shouldReturnNotFoundIfNotExistingPostIsRequested() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post, Void.class);
-        String notPostId = post.getId() + "1";
+        addPostRequest(post);
+        String notPostId = post.getId() + "00";
 
-        ResponseEntity<String> getPostResponse = restTemplate.getForEntity(getBlogURI() + notPostId, String.class);
+        ResponseEntity<String> getPostResponse = getPostById(notPostId);
 
         assertEquals(404, getPostResponse.getStatusCode().value());
     }
 
     @Test
-    public void shouldReturnEmptyArrayWhenBlogHasNoPosts() {
+    public void shouldReturnEmptyArrayWhenBlogHasNoPosts() throws JsonProcessingException {
         clearPosts();
-        ResponseEntity<String> responseEntity = restTemplate.getForEntity(getBlogURI(), String.class);
+
+        ResponseEntity<String> responseEntity = getPostsRequest();
 
         assertEquals(200, responseEntity.getStatusCode().value());
         assertEquals("[]", responseEntity.getBody());
@@ -121,20 +118,17 @@ public class BlogIntegrationTest {
     public void shouldReturnAllPostsWhenBlogHasPosts() throws JsonProcessingException {
         clearPosts();
         Post post1 = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post1, Void.class);
+        addPostRequest(post1);
         Post post2 = objectMapper.readValue(VALID_POST_2, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post2, Void.class);
+        addPostRequest(post2);
 
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
+        ResponseEntity<String> getPostsResponse = getPostsRequest();
 
         assertEquals(200, getPostsResponse.getStatusCode().value());
-        assertNotNull(getPostsResponse.getBody());
-        List<Post> posts = objectMapper.readValue(getPostsResponse.getBody(), new TypeReference<List<Post>>(){});
+        List<Post> posts = toList(getPostsResponse.getBody());
         assertEquals(2, posts.size());
-        assertEquals(post1.getId(), posts.get(0).getId());
         assertEquals(post1.getTitle(), posts.get(0).getTitle());
         assertEquals(post1.getContent(), posts.get(0).getContent());
-        assertEquals(post2.getId(), posts.get(1).getId());
         assertEquals(post2.getTitle(), posts.get(1).getTitle());
         assertEquals(post2.getContent(), posts.get(1).getContent());
     }
@@ -143,57 +137,59 @@ public class BlogIntegrationTest {
     public void shouldUpdateExistingPostIfValidUpdateIsSent() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post, Void.class);
+        Post postWithIndex = addPostRequest(post).getBody();
         Post updated = objectMapper.readValue(VALID_UPDATE_POST_1, Post.class);
+        updated.setId(Objects.requireNonNull(postWithIndex).getId());
         HttpEntity<Post> updatePost = new HttpEntity<>(updated);
-        ResponseEntity<Void> updatePostResponse = restTemplate.exchange(getBlogURI(), HttpMethod.PUT, updatePost, Void.class);
+
+        ResponseEntity<Void> updatePostResponse = updatePostRequest(updatePost);
 
         assertEquals(201, updatePostResponse.getStatusCode().value());
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
-        assertEquals("[" + VALID_UPDATE_POST_1 + "]", getPostsResponse.getBody());
+        List<Post> posts = toList(getPostsRequest().getBody());
+        assertEquals(updated.getId(), posts.get(0).getId());
+        assertEquals(updated.getTitle(), posts.get(0).getTitle());
+        assertEquals(updated.getContent(), posts.get(0).getContent());
     }
 
     @Test
     public void shouldNotUpdateExistingPostIfInvalidUpdateIsSent() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post, Void.class);
-        Post updated = objectMapper.readValue(INVALID_POST_MISSING_TITLE, Post.class);
+        Post postWithId = addPostRequest(post).getBody();
+        Post updated = objectMapper.readValue(VALID_POST_1, Post.class);
+        updated.setId(Objects.requireNonNull(postWithId).getId());
+        updated.setTitle("");
         HttpEntity<Post> updatePost = new HttpEntity<>(updated);
-        ResponseEntity<Void> updatePostResponse =
-                restTemplate.exchange(getBlogURI(), HttpMethod.PUT, updatePost, Void.class);
+
+        ResponseEntity<Void> updatePostResponse = updatePostRequest(updatePost);
 
         assertEquals(405, updatePostResponse.getStatusCode().value());
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
-        assertEquals("[" + VALID_POST_1 + "]", getPostsResponse.getBody());
     }
 
     @Test
     public void shouldReturnNotFoundIfUpdatedPostDoesNotExist() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post, Void.class);
+        addPostRequest(post);
         Post updated = objectMapper.readValue(VALID_POST_2, Post.class);
+        updated.setId("300");
         HttpEntity<Post> updatePost = new HttpEntity<>(updated);
-        ResponseEntity<Void> updatePostResponse =
-                restTemplate.exchange(getBlogURI(), HttpMethod.PUT, updatePost, Void.class);
+
+        ResponseEntity<Void> updatePostResponse = updatePostRequest(updatePost);
 
         assertEquals(404, updatePostResponse.getStatusCode().value());
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
-        assertEquals("[" + VALID_POST_1 + "]", getPostsResponse.getBody());
     }
 
     @Test
     public void shouldDeletePostIfItExist() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post, Void.class);
+        Post registeredPost = addPostRequest(post).getBody();
 
-        ResponseEntity<Void> deletePostResponse =
-                restTemplate.exchange(getBlogURI() + post.getId(), HttpMethod.DELETE, null, Void.class);
+        ResponseEntity<Void> deletePostResponse = deletePostRequest(Objects.requireNonNull(registeredPost).getId());
 
         assertEquals(200, deletePostResponse.getStatusCode().value());
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI(), String.class);
+        ResponseEntity<String> getPostsResponse = getPostsRequest();
         assertEquals("[]", getPostsResponse.getBody());
     }
 
@@ -201,14 +197,55 @@ public class BlogIntegrationTest {
     public void shouldReturnNotFoundIfDeletedPostDoesNotExist() throws JsonProcessingException {
         clearPosts();
         Post post = objectMapper.readValue(VALID_POST_1, Post.class);
-        restTemplate.postForEntity(getBlogURI(), post, Void.class);
+        addPostRequest(post);
         String notAvailablePostId = post.getId() + "1";
 
-        ResponseEntity<Void> deletePostResponse =
-                restTemplate.exchange(getBlogURI() + notAvailablePostId, HttpMethod.DELETE, null, Void.class);
+        ResponseEntity<Void> deletePostResponse = deletePostRequest(notAvailablePostId);
 
         assertEquals(404, deletePostResponse.getStatusCode().value());
-        ResponseEntity<String> getPostsResponse = restTemplate.getForEntity(getBlogURI() + post.getId(), String.class);
-        assertEquals(VALID_POST_1, getPostsResponse.getBody());
     }
+
+    private ResponseEntity<Post> addPostRequest(Post post) {
+        return restTemplate.postForEntity(getBlogURI(), post, Post.class);
+    }
+
+    private ResponseEntity<Void> addInvalidPostRequest(Post post) {
+        return restTemplate.postForEntity(getBlogURI(), post, Void.class);
+    }
+
+    private ResponseEntity<Void> updatePostRequest(HttpEntity<Post> updatePost) {
+        return restTemplate.exchange(getBlogURI(), HttpMethod.PUT, updatePost, Void.class);
+    }
+
+    private ResponseEntity<String> getPostsRequest() {
+        return restTemplate.getForEntity(getBlogURI(), String.class);
+    }
+
+    private List<Post> toList(String postsAsJson) throws JsonProcessingException {
+        return objectMapper.readValue((postsAsJson), new TypeReference<List<Post>>() {
+        });
+    }
+
+    private ResponseEntity<String> getPostById(String id) {
+        return restTemplate.getForEntity(getBlogURI() + id, String.class);
+    }
+
+    private String getBlogURI() {
+        // TODO: Refactor as class member, had problems with port initialization but remember using cleaner solutions
+        return "http://localhost:" + port + "/blog-web/posts/";
+    }
+
+    private ResponseEntity<Void> deletePostRequest(String id) {
+        return restTemplate.exchange(getBlogURI() + id, HttpMethod.DELETE, null, Void.class);
+    }
+
+    void clearPosts() throws JsonProcessingException {
+        // Resets blog server state to make each test independent from the rest
+        ResponseEntity<String> getPostsResponse = getPostsRequest();
+        List<Post> posts = toList(getPostsResponse.getBody());
+        for (Post post : posts) {
+            restTemplate.delete(getBlogURI() + post.getId());
+        }
+    }
+
 }
