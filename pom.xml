@@ -37,6 +37,5 @@
     </build>
     <modules>
         <module>blog-web</module>
-        <module>integration-test</module>
     </modules>
 </project>
