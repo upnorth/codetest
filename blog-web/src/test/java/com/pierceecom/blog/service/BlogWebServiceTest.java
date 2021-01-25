@@ -42,6 +42,20 @@ class BlogWebServiceTest {
     }
 
     @Test
+    void correctIndexForPostsTest(){
+        Post post1 = service.addPost(new Post(null, POST_ONE_TITLE, POST_ONE_CONTENT));
+        Post post2 = service.addPost(new Post(null, POST_ONE_TITLE, POST_ONE_CONTENT));
+        service.deletePost(post2.getId());
+        Post post3 = service.addPost(new Post(null, POST_ONE_TITLE, POST_ONE_CONTENT));
+
+        List<Post> allPosts = service.getAllPosts();
+
+        assertEquals(2, allPosts.size());
+        assertEquals("1", post1.getId());
+        assertEquals("3", post3.getId());
+    }
+
+    @Test
     void addInvalidPostsTest(){
         boolean invalidTitle = false;
         try {
@@ -138,6 +152,20 @@ class BlogWebServiceTest {
 
         List<Post> noPosts = service.getAllPosts();
         assertEquals(noPosts.size(), 0);
+    }
+
+    @Test
+    void correctIndexingTest() {
+        service.addPost(new Post(null, POST_ONE_TITLE, POST_ONE_CONTENT));
+        service.addPost(new Post(null, POST_ONE_TITLE, POST_ONE_CONTENT));
+        service.deletePost("2");
+        service.addPost(new Post(null, POST_ONE_TITLE, POST_ONE_CONTENT));
+
+        List<Post> allPosts = service.getAllPosts();
+
+        assertEquals(2, allPosts.size());
+        assertEquals("1", allPosts.get(0).getId());
+        assertEquals("3", allPosts.get(1).getId());
     }
 
     @Test

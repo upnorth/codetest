@@ -1,6 +1,8 @@
 package com.pierceecom.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 public class Post {
 
@@ -52,5 +54,22 @@ public class Post {
     @JsonProperty("content")
     public void setContent(String content) {
         this.content = content;
+    }
+
+    // TODO: Possibly use @NotBlank annotation in Post class on fields instead
+    public void validate() {
+        if(hasNotValidTitle() || hasNotValidContent()){
+            // TODO: Possibly change to 400 Bad Request in API spec?
+            // TODO: Log error
+            throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED);
+        }
+    }
+
+    private boolean hasNotValidContent() {
+        return this.getContent() == null || this.getContent().trim().equals("");
+    }
+
+    private boolean hasNotValidTitle() {
+        return this.getTitle() == null || this.getTitle().trim().equals("");
     }
 }

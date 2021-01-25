@@ -1,42 +1,48 @@
 package com.pierceecom.blog.service;
 
+import com.pierceecom.blog.model.Blog;
 import com.pierceecom.blog.model.Post;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class BlogWebService implements BlogWebServiceInterface {
-    // TODO: Persist with local or cloud database
-    List<Post> posts = new ArrayList<>();
+    private Blog blog;
 
-    @Override
-    public List<Post> getAllPosts() {
-        return posts;
+    BlogWebService(){
+        this.blog = new Blog();
     }
 
     @Override
-    public void addPost(Post post) {
+    public List<Post> getAllPosts() {
+        return this.blog.posts;
+    }
+
+    @Override
+    public Post addPost(Post post) {
+        post.validate();
         // TODO: Should have generated GUIDs or auto incremented ids from database.
-        // As the API spec doens't require id, current implementation depends on proper input
-        validate(post);
-        posts.add(post);
+        post.setId(String.valueOf(this.blog.nextPostId));
+        this.blog.posts.add(post);
+        this.blog.nextPostId++;
+
+        return post;
     }
 
     @Override
     public void updatePost(Post updatedPost) {
-        validate(updatedPost);
+        updatedPost.validate();
         Post existingPost = findPost(updatedPost.getId());
-        posts.set(posts.indexOf(existingPost), updatedPost);
+        this.blog.posts.set(this.blog.posts.indexOf(existingPost), updatedPost);
     }
 
     @Override
     public void deletePost(String postId) {
         Post existingPost = findPost(postId);
-        posts.remove(existingPost);
+        this.blog.posts.remove(existingPost);
     }
 
     @Override
@@ -44,26 +50,9 @@ public class BlogWebService implements BlogWebServiceInterface {
         return findPost(postId);
     }
 
-    private void validate(Post post) {
-        // TODO: Possibly use @NotBlank annotation in Post class on fields instead, cleaner
-        if(hasNotValidTitle(post) || hasNotValidContent(post)){
-            // TODO: Possibly change to 400 Bad Request in API spec?
-            // TODO: Log error
-            throw new ResponseStatusException(HttpStatus.METHOD_NOT_ALLOWED);
-        }
-    }
-
-    private boolean hasNotValidContent(Post post) {
-        return post.getContent() == null || post.getContent().trim().equals("");
-    }
-
-    private boolean hasNotValidTitle(Post post) {
-        return post.getTitle() == null || post.getTitle().trim().equals("");
-    }
-
     private Post findPost(String id) {
         // TODO: Possibly add validation of id string
-        return posts.stream()
+        return this.blog.posts.stream()
                 .filter(p -> p.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));

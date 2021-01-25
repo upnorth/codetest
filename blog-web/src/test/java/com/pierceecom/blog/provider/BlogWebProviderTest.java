@@ -18,8 +18,6 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class BlogWebProviderTest {
 
-    // Only happy path here due to simple delegation logic, and bad path being tested in service and integration tests
-
     @Mock
     private BlogWebServiceInterface service;
 
@@ -28,10 +26,15 @@ public class BlogWebProviderTest {
 
     @Test
     public void addPostTest() {
-        Post post = new Post("1", "Välkommen!", "Välkommen till vår nya blogg.");
-        resource.addPost(post);
+        String mockPostId = "1";
+        Post submittedPost = new Post(null, "Välkommen!", "Välkommen till vår nya blogg.");
+        Post postWithId = new Post(mockPostId, "Välkommen!", "Välkommen till vår nya blogg.");
+        when(service.addPost(submittedPost)).thenReturn(postWithId);
 
-        verify(service, times(1)).addPost(Mockito.eq(post));
+        Post newPost = resource.addPost(submittedPost).getBody();
+
+        verify(service, times(1)).addPost(Mockito.eq(submittedPost));
+        assertEquals(postWithId, newPost);
     }
 
     @Test
